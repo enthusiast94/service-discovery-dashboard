@@ -1,1 +1,1 @@
-# service-discovery-dashboard
+# Service Discovery Dashboard
