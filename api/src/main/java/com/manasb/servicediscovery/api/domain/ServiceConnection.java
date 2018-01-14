@@ -5,13 +5,13 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServiceConnection implements Closeable {
+public class ServiceConnection<Payload> implements Closeable {
 
-    public final ServiceInstance serviceInstance;
+    public final ServiceInstance<Payload> serviceInstance;
     public final WebTarget target;
     private final List<Runnable> closeSubscribers = new ArrayList<>();
 
-    public ServiceConnection(ServiceInstance serviceInstance, WebTarget target) {
+    public ServiceConnection(ServiceInstance<Payload> serviceInstance, WebTarget target) {
         this.serviceInstance = serviceInstance;
         this.target = target;
     }

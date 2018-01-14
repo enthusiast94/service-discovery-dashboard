@@ -2,71 +2,20 @@ package com.manasb.servicediscovery.api.domain;
 
 import java.util.Objects;
 
-public class ServiceInstance {
+public class ServiceInstance<Payload> {
 
     public final String name;
     public final String address;
     public final int port;
     public final long registrationTimeUtc;
+    public final Payload payload;
 
-    private ServiceInstance(String name, String address, int port, long registrationTimeUtc) {
+    public ServiceInstance(String name, String address, int port, long registrationTimeUtc, Payload payload) {
         this.name = name;
         this.address = address;
         this.port = port;
         this.registrationTimeUtc = registrationTimeUtc;
-    }
-
-    public static NameStep builder() {
-        return new Builder();
-    }
-
-    public interface NameStep {
-        AddressStep name(String name);
-    }
-
-    public interface AddressStep {
-        PortStep address(String address);
-    }
-
-    public interface PortStep {
-        Builder port(int port);
-    }
-
-    public static class Builder implements NameStep, AddressStep, PortStep {
-
-        private String name;
-        private String address;
-        private int port;
-        private long registrationTimeUtc;
-
-        private Builder() {}
-
-        @Override
-        public AddressStep name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        @Override
-        public PortStep address(String address) {
-            this.address = address;
-            return this;
-        }
-
-        @Override
-        public Builder port(int port) {
-            this.port = port;
-            return this;
-        }
-
-        public Builder registrationTimeUtc(long time) {
-            this.registrationTimeUtc = time;
-            return this;
-        }
-
-        public ServiceInstance build() {
-            return new ServiceInstance(name, address, port, registrationTimeUtc);
-        }
+        this.payload = payload;
     }
 
     @Override
@@ -77,13 +26,14 @@ public class ServiceInstance {
         return port == that.port &&
                 registrationTimeUtc == that.registrationTimeUtc &&
                 Objects.equals(name, that.name) &&
-                Objects.equals(address, that.address);
+                Objects.equals(address, that.address) &&
+                Objects.equals(payload, that.payload);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(name, address, port, registrationTimeUtc);
+        return Objects.hash(name, address, port, registrationTimeUtc, payload);
     }
 
     @Override
@@ -93,6 +43,7 @@ public class ServiceInstance {
                 ", address='" + address + '\'' +
                 ", port=" + port +
                 ", registrationTimeUtc=" + registrationTimeUtc +
+                ", payload=" + payload +
                 '}';
     }
 }

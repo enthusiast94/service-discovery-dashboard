@@ -1,12 +1,13 @@
 package com.manasb.servicediscovery.api;
 
+import com.manasb.servicediscovery.api.domain.InstancePayload;
 import com.manasb.servicediscovery.api.domain.ServiceConnection;
 
 import java.io.Closeable;
 
-public interface IServiceRegistry {
+public interface IServiceRegistry<Payload> {
 
-    Closeable registerServiceInstance(String name, String ipAddress, int port) throws Exception;
+    Closeable registerServiceInstance(String name, String ipAddress, int port, Payload payload) throws Exception;
 
     ServiceConnection getServiceConnection(String sourceServiceName, String destinationServiceName) throws Exception;
 }

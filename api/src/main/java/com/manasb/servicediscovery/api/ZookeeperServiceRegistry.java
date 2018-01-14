@@ -15,51 +15,58 @@ import javax.ws.rs.client.WebTarget;
 import java.io.Closeable;
 import java.util.UUID;
 
-public class ZookeeperServiceRegistry implements IServiceRegistry {
+public class ZookeeperServiceRegistry<Payload> implements IServiceRegistry<Payload> {
 
     private static final Logger log = LoggerFactory.getLogger(ZookeeperServiceRegistry.class);
 
     private final CuratorFramework client;
     private final String servicesBasePath;
     private final String serviceLinksBasePath;
-    private final ServiceDiscovery<Void> allServiceDiscovery;
+    private final ServiceDiscovery<Payload> allServiceDiscovery;
+    private final Class<Payload> payloadClass;
 
-    public ZookeeperServiceRegistry(CuratorFramework client, String servicesBasePath, String serviceLinksBasePath) {
+    public ZookeeperServiceRegistry(CuratorFramework client,
+                                    String servicesBasePath,
+                                    String serviceLinksBasePath,
+                                    Class<Payload> payloadClass) {
         this.client = client;
         this.servicesBasePath = servicesBasePath;
         this.serviceLinksBasePath = serviceLinksBasePath;
+        this.payloadClass = payloadClass;
 
         allServiceDiscovery = createServiceDiscovery();
     }
 
     @Override
-    public Closeable registerServiceInstance(String name, String address, int port) throws Exception {
-        ServiceDiscovery<Void> serviceDiscovery = createServiceDiscovery();
+    public Closeable registerServiceInstance(String name, String address, int port, Payload payload) throws Exception {
+        ServiceDiscovery<Payload> serviceDiscovery = createServiceDiscovery();
         serviceDiscovery.start();
-        serviceDiscovery.registerService(ServiceInstance.<Void>builder()
+        serviceDiscovery.registerService(ServiceInstance.<Payload>builder()
                 .name(name)
                 .address(address)
                 .port(port)
+                .payload(payload)
                 .build());
 
         return serviceDiscovery;
     }
 
     @Override
-    public ServiceConnection getServiceConnection(String sourceServiceName, String destinationServiceName) throws Exception {
-        try (ServiceProvider<Void> serviceProvider = allServiceDiscovery
+    public ServiceConnection<Payload> getServiceConnection(String sourceServiceName, String destinationServiceName) throws Exception {
+        try (ServiceProvider<Payload> serviceProvider = allServiceDiscovery
                 .serviceProviderBuilder()
                 .serviceName(destinationServiceName)
                 .build()) {
             serviceProvider.start();
 
-            ServiceInstance<Void> zkInstance = serviceProvider.getInstance();
-            com.manasb.servicediscovery.api.domain.ServiceInstance instance = com.manasb.servicediscovery.api.domain.ServiceInstance.builder()
-                    .name(zkInstance.getName())
-                    .address(zkInstance.getAddress())
-                    .port(zkInstance.getPort())
-                    .registrationTimeUtc(zkInstance.getRegistrationTimeUTC())
-                    .build();
+            ServiceInstance<Payload> zkInstance = serviceProvider.getInstance();
+            com.manasb.servicediscovery.api.domain.ServiceInstance<Payload> instance = new com.manasb.servicediscovery.api.domain.ServiceInstance<>(
+                    zkInstance.getName(),
+                    zkInstance.getAddress(),
+                    zkInstance.getPort(),
+                    zkInstance.getRegistrationTimeUTC(),
+                    zkInstance.getPayload()
+            );
             WebTarget target = ClientBuilder.newClient()
                     .target(instance.address + ":" + instance.port);
 
@@ -89,8 +96,8 @@ public class ZookeeperServiceRegistry implements IServiceRegistry {
         return path;
     }
 
-    private ServiceDiscovery<Void> createServiceDiscovery() {
-        return ServiceDiscoveryBuilder.builder(Void.class)
+    private ServiceDiscovery<Payload> createServiceDiscovery() {
+        return ServiceDiscoveryBuilder.builder(payloadClass)
                 .client(client)
                 .basePath(servicesBasePath)
                 .build();

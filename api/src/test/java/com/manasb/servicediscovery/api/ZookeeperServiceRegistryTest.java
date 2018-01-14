@@ -1,14 +1,10 @@
 package com.manasb.servicediscovery.api;
 
 import com.manasb.servicediscovery.api.domain.ServiceConnection;
-import javafx.css.Match;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
 
 import java.io.Closeable;
@@ -39,8 +35,10 @@ class ZookeeperServiceRegistryTest {
 
     @Test
     void shouldRegisterServiceInstance() throws Exception {
-        ZookeeperServiceRegistry serviceRegistry = new ZookeeperServiceRegistry(client, "services", "serviceLinks");
-        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1);
+        ZookeeperServiceRegistry<InstancePayload> serviceRegistry = new ZookeeperServiceRegistry<>(client,
+                "services", "serviceLinks", InstancePayload.class);
+        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1,
+                new InstancePayload("1.2.3"));
 
         List<String> services = client.getChildren().forPath("/services");
         assertThat(services.size(), is(1));
@@ -54,13 +52,16 @@ class ZookeeperServiceRegistryTest {
 
     @Test
     void shouldGetServiceConnection() throws Exception {
-        ZookeeperServiceRegistry serviceRegistry = new ZookeeperServiceRegistry(client, "services", "serviceLinks");
-        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1);
+        ZookeeperServiceRegistry<InstancePayload> serviceRegistry = new ZookeeperServiceRegistry<>(client,
+                "services", "serviceLinks", InstancePayload.class);
+        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1,
+                new InstancePayload("1.2.3"));
 
-        ServiceConnection serviceConnection = serviceRegistry.getServiceConnection("test", "OMS");
+        ServiceConnection<InstancePayload> serviceConnection = serviceRegistry.getServiceConnection("test", "OMS");
         assertThat(serviceConnection.serviceInstance.name, is("OMS"));
         assertThat(serviceConnection.serviceInstance.address, is("localhost"));
         assertThat(serviceConnection.serviceInstance.port, is(1));
+        assertThat(serviceConnection.serviceInstance.payload.version, is("1.2.3"));
         assertThat(serviceConnection.target.getUri().toString(), is("localhost:1"));
 
         closeable.close();
@@ -68,8 +69,10 @@ class ZookeeperServiceRegistryTest {
 
     @Test
     void shouldRegisterLinksOnGettingServiceConnection() throws Exception {
-        ZookeeperServiceRegistry serviceRegistry = new ZookeeperServiceRegistry(client, "services", "serviceLinks");
-        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1);
+        ZookeeperServiceRegistry<InstancePayload> serviceRegistry = new ZookeeperServiceRegistry<>(client,
+                "services", "serviceLinks", InstancePayload.class);
+        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1,
+                new InstancePayload("1.2.3"));
 
         ServiceConnection serviceConnection = serviceRegistry.getServiceConnection("test", "OMS");
 
@@ -90,8 +93,10 @@ class ZookeeperServiceRegistryTest {
 
     @Test
     void shouldUnregisterLinkWhenConnectionIsClosed() throws Exception {
-        ZookeeperServiceRegistry serviceRegistry = new ZookeeperServiceRegistry(client, "services", "serviceLinks");
-        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1);
+        ZookeeperServiceRegistry<InstancePayload> serviceRegistry = new ZookeeperServiceRegistry<>(client,
+                "services", "serviceLinks", InstancePayload.class);
+        Closeable closeable = serviceRegistry.registerServiceInstance("OMS", "localhost", 1,
+                new InstancePayload("1.2.3"));
 
         ServiceConnection serviceConnection = serviceRegistry.getServiceConnection("test", "OMS");
 
