@@ -35,12 +35,12 @@ public class ZookeeperServiceRegistry implements IServiceRegistry {
     @Override
     public Closeable registerServiceInstance(String name, String address, int port) throws Exception {
         ServiceDiscovery<Void> serviceDiscovery = createServiceDiscovery();
+        serviceDiscovery.start();
         serviceDiscovery.registerService(ServiceInstance.<Void>builder()
                 .name(name)
                 .address(address)
                 .port(port)
                 .build());
-        serviceDiscovery.start();
 
         return serviceDiscovery;
     }
