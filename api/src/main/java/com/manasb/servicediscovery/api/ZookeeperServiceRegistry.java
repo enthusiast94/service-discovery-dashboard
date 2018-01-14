@@ -70,7 +70,7 @@ public class ZookeeperServiceRegistry<Payload> implements IServiceRegistry<Paylo
             WebTarget target = ClientBuilder.newClient()
                     .target(instance.address + ":" + instance.port);
 
-            ServiceConnection serviceConnection = new ServiceConnection(instance, target);
+            ServiceConnection<Payload> serviceConnection = new ServiceConnection<>(instance, target);
 
             String linkPath = createServiceLink(sourceServiceName, destinationServiceName);
 
