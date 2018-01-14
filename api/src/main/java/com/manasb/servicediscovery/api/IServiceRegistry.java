@@ -1,6 +1,5 @@
 package com.manasb.servicediscovery.api;
 
-import com.manasb.servicediscovery.api.domain.InstancePayload;
 import com.manasb.servicediscovery.api.domain.ServiceConnection;
 
 import java.io.Closeable;
