@@ -8,5 +8,5 @@ public interface IServiceRegistry<Payload> {
 
     Closeable registerServiceInstance(String name, String ipAddress, int port, Payload payload) throws Exception;
 
-    ServiceConnection getServiceConnection(String sourceServiceName, String destinationServiceName) throws Exception;
+    ServiceConnection<Payload> getServiceConnection(String sourceServiceName, String destinationServiceName) throws Exception;
 }
