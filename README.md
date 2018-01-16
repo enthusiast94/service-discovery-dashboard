@@ -1,1 +1,1 @@
-# Service Discovery Dashboard
+# Zookeeper Service Discovery Dashboard
